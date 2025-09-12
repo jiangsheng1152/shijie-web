@@ -1,0 +1,111 @@
+﻿<Descriptions Title="材料明细" Bordered Layout="DescriptionsLayout.Horizontal" Column="1">
+    <DescriptionsItem Title="丹药名">@Pill.Name</DescriptionsItem>
+    <DescriptionsItem Title="简述">@Pill.Description</DescriptionsItem>
+    <DescriptionsItem Title="材料">
+        <Row Justify="RowJustify.SpaceBetween" Gutter="16">
+            <Col>
+                    @foreach (var a in Pill?.Materials ?? [])
+                    { 
+                        <div>
+                            @a.Name（@a.MaterLevelStatus.ToString()）
+                        </div>
+                    }
+            </Col>
+            <Col>
+                <Space Direction="SpaceDirection.Vertical">
+                    <SpaceItem>
+                        <Button OnClick="AddMaterial" Type="ButtonType.Primary" Color="Color.Green6" Size="ButtonSize.Small">
+                            添加材料
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button OnClick="ChooseMaterial" Type="ButtonType.Primary" Size="ButtonSize.Small">
+                            选择材料
+                        </Button>
+                    </SpaceItem>
+                </Space>
+            </Col>
+        </Row>
+    </DescriptionsItem>
+</Descriptions>
+@code {
+    [Parameter]
+    public PillEntity Pill{ set; get; }
+
+    /// <summary>
+    /// 添加材料
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
+    private async Task AddMaterial()
+    {
+        MaterialEntity data = new();
+        ModalRef<bool> modalRef = default;
+        IForm form = default;
+        modalRef = ModalService.CreateModal<bool>(new()
+        {
+            Title = data.Id > 0 ? "编辑" : "新建",
+            Content = @<Form @ref="form" Model="data" OnFinish="() => modalRef.OkAsync(true)" LabelColSpan="8" WrapperColSpan="16">
+                <FormItem>
+                    <Input @bind-Value="@context.Name" />
+                </FormItem>
+                <FormItem>
+                    <EnumSelect TEnum="LevelStatus" @bind-Value="@context.MaterLevelStatus"></EnumSelect>
+                </FormItem>
+            </Form>,
+
+            OnOk = async (e) =>
+            {
+                if (!form.Validate())
+                    return;
+
+                var Material = await db.Queryable<MaterialEntity>().Where(x => x.Name == data.Name).FirstAsync();
+                if (Material != null)
+                {
+                    await message.ErrorAsync("名字重复");
+                }
+
+                // save db and refresh
+                modalRef.SetConfirmLoading(true);
+                var id=await db.Insertable<MaterialEntity>(data).ExecuteReturnIdentityAsync();
+                await db.Insertable(new PillMaterialEntity()
+                {
+                    PillId = Pill.Id,
+                    MaterialId = id
+                }).ExecuteCommandAsync();
+                await modalRef.CloseAsync();
+                Pill=await db.Queryable<PillEntity>()
+                    .Where(x => x.Id == Pill.Id)
+                    .Includes(x => x.Materials)
+                    .FirstAsync();
+
+                StateHasChanged();
+            },
+            OnCancel = async (e) =>
+            {
+                await modalRef.CloseAsync();
+            }
+        });
+    }
+
+    private async Task ChooseMaterial()
+    {
+        var modalConfig = new ModalOptions
+        {
+            Title = "选择材料"
+        };
+        ModalRef<List<MaterialEntity>> modalRef = default;
+        modalConfig.DestroyOnClose = true;
+        modalRef = ModalService
+            .CreateModal<MaterialPanel, int[], List<MaterialEntity>>(modalConfig, Pill.Materials.Select(x => x.Id).ToArray());
+
+        modalRef.OnOk = async (result) =>
+        {
+            Pill.Materials = result;
+            await db.UpdateNav(Pill).Include(x => x.Materials).ExecuteCommandAsync();
+            StateHasChanged();
+        };
+    }
+
+
+}

@@ -1,0 +1,23 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using DailyDaGang
+@using DailyDaGang.Components
+@using AntDesign
+@using SqlSugar
+@using DailyDaGang.Entities
+@using DailyDaGang.Core
+@using DailyDaGang.Enums
+@inject ModalService ModalService;
+@inject ConfirmService ComfirmService;
+@inject ISqlSugarClient db;
+@inject IMessageService message
+@using DailyDaGang.Components.Tables
+@using DailyDaGang.Components.Forms
+@using DailyDaGang.Components.Panels
+@using AntDesign.TableModels

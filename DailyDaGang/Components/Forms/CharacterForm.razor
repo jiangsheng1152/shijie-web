@@ -1,0 +1,46 @@
+﻿<Descriptions Title="人物明细" Bordered Layout="DescriptionsLayout.Horizontal" Column="2">
+    <DescriptionsItem Title="姓名">@Character.Name</DescriptionsItem>
+    <DescriptionsItem Title="年龄">@Character.Age</DescriptionsItem>
+    <DescriptionsItem Title="标签" Span="2">
+        <Row Justify="RowJustify.SpaceBetween" Gutter="16">
+            <Col>
+                <Space Wrap>
+                    @foreach (var a in Character?.Labels ?? [])
+                    {
+                        <Tag Color="@a.LabelColor">@a.Name</Tag>
+                    }
+                </Space>
+            </Col>
+            <Col>
+                <Button OnClick="EditLabel" Type="ButtonType.Primary" Size="ButtonSize.Small">
+                    添加标签
+                </Button>
+            </Col>
+        </Row>
+    </DescriptionsItem>
+    <DescriptionsItem Title="简述" Span="2">@Character.Description</DescriptionsItem>
+    <DescriptionsItem Title="外貌描写" Span="2">@Character.Appearance</DescriptionsItem>
+</Descriptions>
+
+@code {
+    [Parameter]
+    public CharacterEntity Character{ set; get; }
+
+    private async Task EditLabel()
+    {
+        var modalConfig = new ModalOptions();
+        modalConfig.Title = "选择标签";
+        ModalRef<List<LabelEntity>> modalRef = default;
+        modalConfig.DestroyOnClose = true;
+        modalRef = ModalService.CreateModal<LabelPanel,(int[],LabelStatus), List<LabelEntity>>(modalConfig, (Character.Labels.Select(x => x.Id).ToArray(),LabelStatus.人物标签));
+
+        modalRef.OnOk = async (result) =>
+        {
+            Character.Labels = result;
+            await db.UpdateNav(Character).Include(x => x.Labels).ExecuteCommandAsync();
+            StateHasChanged();
+        };
+    }
+
+
+}

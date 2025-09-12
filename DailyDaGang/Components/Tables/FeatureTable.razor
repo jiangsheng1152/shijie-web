@@ -1,0 +1,134 @@
+﻿<Table @ref="table" TItem="FeatureEntity" DataSource="Features" PageIndex="@currentPage" PageSize="@pageSize" OnPageIndexChange="OnPageChange" Total="total">
+    <TitleTemplate>
+        <Flex Justify="FlexJustify.End" Gap="@("10")">
+            <EnumSelect TEnum="RootSourceStatus?" @bind-Value="status" OnSelectedItemChanged="SelectChange" AllowClear Style="width:150px"/>
+            <Button Type="ButtonType.Primary" @onclick="() => StartEditAsync(default)">创建</Button>
+        </Flex>
+    </TitleTemplate>
+    <ColumnDefinitions Context="row">
+        <PropertyColumn Property="c => c.Name" Width="120"></PropertyColumn>
+        <PropertyColumn Property="c => c.RootStatus" Width="120"></PropertyColumn>
+        <PropertyColumn Property="c => c.FeatureDescription"></PropertyColumn>
+        <ActionColumn Title="操作" Width="100">
+            <Button @onclick="() => StartEditAsync(row)" Type="ButtonType.Primary" Shape="ButtonShape.Circle" Icon="@IconType.Outline.Edit" />
+            <Button @onclick="() => Delete(row)" Type="ButtonType.Primary" Shape="ButtonShape.Circle" Danger Icon="@IconType.Outline.Delete" />
+        </ActionColumn>
+    </ColumnDefinitions>
+</Table>
+@code {
+    ITable? table;
+    List<FeatureEntity> Features = new();
+    int currentPage = 1;
+    int pageSize = 5;
+    int total = 0;
+    RootSourceStatus? status = null;
+
+
+    /// <summary>
+    /// 初始化
+    /// </summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPageList();
+    }
+
+    private async Task SelectChange()
+    {
+        currentPage = 1;
+        await GetPageList();
+    }
+
+    private async Task GetPageList()
+    {
+        Features = db.Queryable<FeatureEntity>()
+            .WhereIF(status!=null,x=>x.RootStatus==status)
+            .ToPageList(currentPage, pageSize, ref total);
+    }
+
+    /// <summary>
+    /// 页面改变
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    private async Task OnPageChange(PaginationEventArgs args)
+    {
+        currentPage = args.Page;
+        pageSize = args.PageSize;
+        await GetPageList();
+    }
+
+
+    /// <summary>
+    /// 开始编辑
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
+    private async Task StartEditAsync(FeatureEntity row)
+    {
+        var data = row == null ? new() : row;
+        ModalRef<bool> modalRef = default;
+        IForm form = default;
+        modalRef = ModalService.CreateModal<bool>(new()
+        {
+            Title = data.Id > 0 ? "编辑" : "新建",
+            Content = @<Form @ref="form" Model="data" OnFinish="() => modalRef.OkAsync(true)" LabelColSpan="5" WrapperColSpan="19">
+                <FormItem>
+                    <Input @bind-Value="@context.Name"/>
+                </FormItem>
+                <FormItem>
+                    <EnumSelect TEnum="RootSourceStatus" @bind-Value="@context.RootStatus"/>
+                </FormItem>
+                <FormItem>
+                    <TextArea MinRows="3" @bind-Value="@context.FeatureDescription" />
+                </FormItem>
+            </Form>,
+
+            OnOk = async (e) =>
+            {
+                if (!form.Validate())
+                    return;
+
+                var Feature = await db.Queryable<FeatureEntity>().Where(x => x.Name == data.Name).FirstAsync();
+                if (Feature != null && row?.Id == 0)
+                {
+                    await message.ErrorAsync("名字重复");
+                }
+
+                // save db and refresh
+                modalRef.SetConfirmLoading(true);
+
+
+                if (data.Id > 0)
+                {
+                    //修改
+                    await db.Updateable<FeatureEntity>(data).ExecuteCommandAsync();
+                }
+                else
+                {
+                    //新增
+                    await db.Insertable<FeatureEntity>(data).ExecuteCommandAsync();
+                }
+
+                await modalRef.CloseAsync();
+                await GetPageList();
+                table.ReloadData();
+                StateHasChanged();
+            },
+            OnCancel = async (e) =>
+            {
+                await modalRef.CloseAsync();
+            }
+        });
+    }
+
+    private async Task Delete(FeatureEntity row)
+    {
+        if (!(await ComfirmService.Show("确认删这条数据吗?", "删除", ConfirmButtons.YesNo, ConfirmIcon.Warning) == ConfirmResult.Yes))
+            return;
+        await db.Deleteable<FeatureEntity>().Where(x => x.Id == row.Id).ExecuteCommandAsync();
+        await GetPageList();
+        table.ReloadData();
+        StateHasChanged();
+    }
+}
+

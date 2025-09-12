@@ -1,0 +1,28 @@
+﻿@inherits FeedbackComponent<(int[],LabelStatus),List<LabelEntity>>
+<Card>
+    <CheckboxGroup TValue="int" Options="@labels" @bind-value="chooseLabels">
+    </CheckboxGroup>
+</Card>
+@code {
+    CheckboxOption<int>[] labels;
+    int[] chooseLabels;
+    List<LabelEntity> list;
+    protected override async Task OnInitializedAsync()
+    {
+        chooseLabels = base.Options.Item1;
+        var status = base.Options.Item2;
+        list = await db.Queryable<LabelEntity>().Where(x => x.LabelStatus == status).ToListAsync();
+        labels = list.Select(x => new CheckboxOption<int>()
+        {
+            Label = x.Name,
+            Value = x.Id
+        }).ToArray();
+    }
+
+    public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        var chooseList = list.Where(x => chooseLabels.Contains(x.Id)).ToList();
+        base.OkCancelRefWithResult!.OkAsync(chooseList);
+        return base.OnFeedbackOkAsync(args);
+    }
+}

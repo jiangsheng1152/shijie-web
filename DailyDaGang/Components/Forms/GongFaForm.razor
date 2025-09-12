@@ -1,0 +1,169 @@
+﻿<Descriptions Title="功法明细" Bordered Layout="DescriptionsLayout.Horizontal" Column="6">
+    <DescriptionsItem Title="功法名" Span="3">@GongFa.Name</DescriptionsItem>
+    <DescriptionsItem Title="类型" Span="3">@GongFa.SourecStatus</DescriptionsItem>
+    <DescriptionsItem Title="标签" Span="6">
+        <Row Justify="RowJustify.SpaceBetween" Gutter="16">
+            <Col>
+                <Space Wrap>
+                    @foreach (var a in GongFa?.Labels ?? [])
+                    {
+                        <Tag Color="@a.LabelColor">@a.Name</Tag>
+                    }
+                </Space>
+            </Col>
+            <Col>
+                <Button OnClick="EditLabel" Type="ButtonType.Primary" Size="ButtonSize.Small" Icon="@IconType.Outline.Plus">
+                    添加标签
+                </Button>
+            </Col>
+        </Row>
+    </DescriptionsItem>
+    <DescriptionsItem Title="简述" Span="6">
+        <div class="pre-line">
+            @GongFa.GongFaDescription
+        </div>
+    </DescriptionsItem>
+    <DescriptionsItem Title="初锋丹药" Span="2">
+        @if (GongFa.FirstPillId > 0)
+        {
+            var id = GongFa?.FirstPillId ?? 0;
+            <div class="clickable" @onclick="() => OnOpen(id)">
+                @GongFa?.FirstPill?.Name
+            </div>
+        }
+        else
+        {
+            <Button Type="ButtonType.Primary" OnClick="()=>AddPill(1)" Size="ButtonSize.Small" Icon="@IconType.Outline.Plus">添加丹药</Button>
+        }
+    </DescriptionsItem>
+    <DescriptionsItem Title="承级丹药" Span="2">
+        @if (GongFa.SecondPillId > 0)
+        {
+            var id = GongFa?.SecondPillId??0; 
+            <div class="clickable" @onclick="() => OnOpen(id)">
+                @GongFa?.SecondPill?.Name
+            </div>
+        }
+        else
+        {
+            <Button Type="ButtonType.Primary" OnClick="() => AddPill(2)" Size="ButtonSize.Small" Icon="@IconType.Outline.Plus">添加丹药</Button>
+        }
+    </DescriptionsItem>
+    <DescriptionsItem Title="半神丹药" Span="2">
+        @if (GongFa.ThirdPillId > 0)
+        {
+            var id = GongFa?.ThirdPillId ?? 0;
+            <div class="clickable" @onclick="() => OnOpen(id)">
+                @GongFa?.ThirdPill?.Name
+            </div>
+        }
+        else
+        {
+            <Button Type="ButtonType.Primary" OnClick="() => AddPill(3)" Size="ButtonSize.Small" Icon="@IconType.Outline.Plus">添加丹药</Button>
+        }
+    </DescriptionsItem>
+    <DescriptionsItem Title="拥有技能" Span="6">
+        初锋阶丹药4324
+    </DescriptionsItem>
+</Descriptions>
+<Modal Visible="@isShow" Footer="null" Width="800" OnCancel="OnCancel">
+    <PillForm Pill="Pill"></PillForm>
+</Modal>
+@code {
+    [Parameter]
+    public GongFaEntity GongFa{ set; get; }
+
+    PillEntity Pill=new();
+    bool isShow = false;
+    private async Task EditLabel()
+    {
+        var modalConfig = new ModalOptions();
+        modalConfig.Title = "选择标签";
+        ModalRef<List<LabelEntity>> modalRef = default;
+        modalConfig.DestroyOnClose = true;
+        modalRef = ModalService.CreateModal<LabelPanel,(int[],LabelStatus), List<LabelEntity>>(modalConfig, (GongFa.Labels.Select(x => x.Id).ToArray(),LabelStatus.功法标签));
+
+        modalRef.OnOk = async (result) =>
+        {
+            GongFa.Labels = result;
+            await db.UpdateNav(GongFa).Include(x => x.Labels).ExecuteCommandAsync();
+            StateHasChanged();
+        };
+    }
+
+    private async Task AddPill(int a)
+    {
+        PillEntity data = new();
+        ModalRef<bool> modalRef = default;
+        IForm form = default;
+        modalRef = ModalService.CreateModal<bool>(new()
+        {
+            Title = data.Id > 0 ? "编辑" : "新建",
+            Content = @<Form @ref="form" Model="data" OnFinish="() => modalRef.OkAsync(true)" LabelColSpan="5" WrapperColSpan="19">
+                <FormItem>
+                    <Input @bind-Value="@context.Name"/>
+                </FormItem>
+                <FormItem>
+                    <TextArea MinRows="3" @bind-Value="@context.Description"></TextArea>
+                </FormItem>
+            </Form>,
+
+            OnOk = async (e) =>
+            {
+                if (!form.Validate())
+                    return;
+
+                var pill = await db.Queryable<PillEntity>().Where(x => x.Name == data.Name).FirstAsync();
+                if (pill != null)
+                {
+                    await message.ErrorAsync("名字重复");
+                }
+
+                // save db and refresh
+                modalRef.SetConfirmLoading(true);
+
+                int id=await db.Insertable(data).ExecuteReturnIdentityAsync();
+
+                if (a == 1)
+                {
+                    GongFa.FirstPillId = id;
+                }
+                else if (a == 2)
+                {
+                    GongFa.SecondPillId = id;
+                }
+                else if (a == 3)
+                {
+                    GongFa.ThirdPillId = id;
+                }
+                await db.Updateable(GongFa).ExecuteCommandAsync();
+                await modalRef.CloseAsync();
+                GongFa = await db.Queryable<GongFaEntity>()
+                    .Where(x => x.Id == GongFa.Id)
+                    .Includes(x => x.FirstPill)
+                    .Includes(x => x.SecondPill)
+                    .Includes(x => x.ThirdPill)
+                    .FirstAsync();
+                StateHasChanged();
+            },
+            OnCancel = async (e) =>
+            {
+                await modalRef.CloseAsync();
+            }
+        });
+    }
+
+    public async Task OnOpen(int id)
+    {
+        Pill = await db.Queryable<PillEntity>()
+            .Where(x => x.Id == id)
+            .Includes(x => x.Materials)
+            .FirstAsync();
+        isShow = true;
+    }
+
+    public async Task OnCancel()
+    {
+        isShow = false;
+    }
+}
