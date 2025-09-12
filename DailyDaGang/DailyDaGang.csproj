@@ -8,13 +8,19 @@
 
   <ItemGroup>
     <PackageReference Include="AntDesign" Version="1.4.2" />
-    <PackageReference Include="SqlSugarCore" Version="5.1.4.197" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="wwwroot\favicon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Forms\" />
+    <Folder Include="Components\Panels\" />
+    <Folder Include="Components\Tables\" />
+    <Folder Include="Entities\" />
   </ItemGroup>
 
 <PropertyGroup>
