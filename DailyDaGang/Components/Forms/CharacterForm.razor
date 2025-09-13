@@ -1,7 +1,17 @@
-﻿<h3>CharacterForm</h3>
-<Form>
-    
+﻿@using DailyDaGang.Model
+<h3>CharacterForm</h3>
+<Form Model="Character" LabelColSpan="4" WrapperColSpan="20" @ref="formRef">
+    <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
 </Form>
 @code {
-    
+    [Parameter] public Character Character { set; get; } = default;
+    private Form<Character> formRef;
+    // 给父组件调用验证用
+    public Character Validate()
+    {
+        if (formRef.Validate())
+            return Character;
+        return null;
+    }
+
 }

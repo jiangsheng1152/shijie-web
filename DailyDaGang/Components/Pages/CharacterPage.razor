@@ -1,6 +1,20 @@
-﻿@page "/characterPage"
+﻿@page "/character"
+@using DailyDaGang.Model
 <h3>CharacterPage</h3>
-
+<Button OnClick="()=>_visible=true">打开</Button>
+<Modal Title="BasicModal"
+       @bind-Visible="@_visible"
+       OnOk="HandleOk">
+    <CharacterForm Character="@model" @ref="form"/>
+</Modal>
 @code {
-    
+    bool _visible;
+    Character model = new();
+    private CharacterForm form;
+    private void HandleOk(MouseEventArgs e)
+    {
+        var result = form.Validate();
+        if (result is null) return; // 验证失败
+        _visible = false;            // 验证成功，关闭 Modal
+    }
 }
