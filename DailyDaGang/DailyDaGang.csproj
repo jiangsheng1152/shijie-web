@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Entities\**" />
+    <Content Remove="Entities\**" />
+    <EmbeddedResource Remove="Entities\**" />
+    <None Remove="Entities\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AntDesign" Version="1.4.2" />
   </ItemGroup>
 
@@ -20,7 +27,6 @@
     <Folder Include="Components\Forms\" />
     <Folder Include="Components\Panels\" />
     <Folder Include="Components\Tables\" />
-    <Folder Include="Entities\" />
   </ItemGroup>
 
 <PropertyGroup>
