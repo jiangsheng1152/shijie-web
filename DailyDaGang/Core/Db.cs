@@ -1,0 +1,28 @@
+﻿using LiteDB;
+
+namespace DailyDaGang.Core;
+
+public static class Db
+{
+    private static readonly string _connStr = @"Filename=dagang.db;Connection=shared";
+
+    /// <summary>
+    /// 执行 LiteDB 操作，可返回结果
+    /// </summary>
+    public static TResult Execute<TResult>(Func<LiteDatabase, TResult> action)
+    {
+        if (action == null) throw new ArgumentNullException(nameof(action));
+        using var db = new LiteDatabase(_connStr);
+        return action(db);
+    }
+
+    /// <summary>
+    /// 针对无返回值的操作，提供 Action 重载（内部调用上面的 Func）
+    /// </summary>
+    public static void Execute(Action<LiteDatabase> action)
+    {
+        if (action == null) throw new ArgumentNullException(nameof(action));
+        using var db = new LiteDatabase(_connStr);
+        action(db);
+    }
+}

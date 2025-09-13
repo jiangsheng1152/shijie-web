@@ -1,0 +1,125 @@
+﻿@page "/"
+@using DailyDaGang.Model
+
+<h2>主页</h2>
+<GridRow>
+    <GridCol Span="3">
+        <Card Style="height: 90vh;overflow:auto;">
+            <Title Level="5" Style="margin-left: 30px">选项卡</Title>
+            <Tree
+                SwitcherIcon="null"
+                DefaultExpandAll
+                BlockNode
+                DataSource="list"
+                TitleExpression="x => x.DataItem.Title"
+                KeyExpression="x => x.DataItem.Id.ToString()"
+                @bind-SelectedData="selectKey"
+                TItem="DaGang"
+                Style="font-size: 15px;">
+            </Tree>
+        </Card>
+    </GridCol>
+    <GridCol Span="14">
+        <Card Style="height: 90vh">
+            <Row Style="margin-bottom: 5px">
+                <Space>
+                    <SpaceItem>
+                        <AntDesign.Input TValue="string" Style="font-size: 16px;font-weight: bold" ReadOnly="@isShow" @bind-Value="@selectKey.Title">
+                            <AddOnBefore>标题</AddOnBefore>
+                        </AntDesign.Input>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button OnClick="SetShow" Color="Color.Green6">
+                            @{ var btn = isShow ? "编辑" : "保存"; }
+                            @btn
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button Color="Color.Blue6" OnClick="AddDaGang">新建</Button>
+                    </SpaceItem>
+                </Space>
+            </Row>
+            <TextArea @bind-Value="@selectKey.LongContent" style="font-size: 16px;padding: 0px;height: 80vh" ShowCount readonly="@isShow"></TextArea>
+        </Card>
+    </GridCol>
+    <GridCol Span="7">
+        <GridRow>
+            <GridCol Span="24">
+                <Card Title="人物" Style="padding: 10px">
+                    <Extra>
+                        <Button Color="Color.Blue6">添加人物</Button>
+                    </Extra>
+                    <ChildContent>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物1
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物2
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物3
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物4
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物1
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物2
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物3
+                        </CardGrid>
+                    </ChildContent>
+                </Card>
+            </GridCol>
+            <GridCol Span="24">
+            </GridCol>
+        </GridRow>
+    </GridCol>
+</GridRow>
+@code {
+    DaGang selectKey { set; get; }=new();
+    bool isShow = true;
+    List<DaGang> list { set; get; } = [];
+
+    protected override void OnInitialized()
+    {
+        GetList();
+        selectKey = list.FirstOrDefault()??new();
+    }
+
+    private void GetList() => Db.Execute(x =>list= x.GetCollection<DaGang>().FindAll().ToList());
+    
+    private void SetShow()
+    { 
+        if(!isShow)
+            SaveDagang();
+        isShow = !isShow;
+    } 
+
+    private void AddDaGang()
+    {
+        isShow = !isShow;
+        selectKey = new();
+    }
+
+    private void SaveDagang()
+    {
+        if (!string.IsNullOrWhiteSpace(selectKey.LongContent) && !string.IsNullOrWhiteSpace(selectKey.Title))
+        {
+            Db.Execute(x => x.GetCollection<DaGang>().Upsert(selectKey));
+            GetList();
+        }
+    }
+}
+<style scoped>
+    .ant-tree-switcher{
+        width: 0px;
+        line-height: 0px;
+    }
+    .ant-tree .ant-tree-node-content-wrapper{
+        line-height: 36px;
+    }
+</style>

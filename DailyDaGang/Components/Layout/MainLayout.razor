@@ -1,70 +1,35 @@
-﻿
+﻿@using OneOf.Types
 @inherits LayoutComponentBase
 
 <Layout Class="site-layout-background">
-    <Sider Class="site-layout-background" @bind-Collapsed=@collapsed>
-        <Title Level="4" Style="text-align:center">目录</Title>
+    <Sider Class="site-layout-background" Collapsed=true>
+        <Title Level="4" Style="text-align:center;padding-top: 10px">目录</Title>
         <Menu Theme="MenuTheme.Light" Mode="MenuMode.Inline" DefaultSelectedKeys=@(new[] { "1" }) InlineCollapsed=collapsed>
-            <MenuItem Key="1" Routerlink="/">
-                <span>主页</span>
-            </MenuItem>
-            <MenuItem Key="2" RouterLink="character">
-                <span>角色</span>
-            </MenuItem>
-            <MenuItem Key="3" RouterLink="gong-fa">
-                <span>功法</span>
-            </MenuItem>
-            <MenuItem Key="4" RouterLink="pill">
-                <span>丹药</span>
-            </MenuItem>
-            <MenuItem Key="5" RouterLink="material">
-                <span>材料</span>
-            </MenuItem>
-            <MenuItem Key="6" RouterLink="skill">
-                <span>技能</span>
-            </MenuItem>
-            <MenuItem Key="7" RouterLink="revise">
-                <span>修改</span>
-            </MenuItem>
+            @foreach (var m in menuItems)
+            {
+                <MenuItem Key=@m.Key Routerlink="@m.Url">
+                    <span>@m.Title</span>
+                </MenuItem>
+            }
         </Menu>
     </Sider>
     <Layout>
-        <Header Style="background: #fff;">
-            <!-- 放到右边的按钮 -->
-            <Space>
-                <SpaceItem>
-                    <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" OnClick="()=>isShow=true">标</Button>
-                </SpaceItem>
-                <SpaceItem>
-                    <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" OnClick="() => featureIsShow = true">特</Button>
-                </SpaceItem>
-            </Space>
-        </Header>
         <Content Style=" margin: 0 1vh 1vh">
-            <div class="site-layout-background" style="padding: 24px; min-height: 90vh">
+            <div class="site-layout-background" style="padding: 18px; min-height: 99vh">
                 @Body
             </div>
         </Content>
     </Layout>
 </Layout>
-<Modal Width="800" Visible="@isShow" Footer="null" OnCancel="()=>isShow=false">
-    <LabelTable></LabelTable>
-</Modal>
-<Modal Width="800" Visible="@featureIsShow" Footer="null" OnCancel="() => featureIsShow = false">
-    <FeatureTable></FeatureTable>
-</Modal>
 @code {
     bool collapsed = true;
     bool isShow = false;
     bool featureIsShow = false;
+    private List<MenuValue> menuItems = MenuInfo.MenuList.OrderBy(x=>x.Order).ToList();
 }
 
 <style>
     .site-layout-background {
-        background: #fff;
-    }
-
-    .site-layout-sub-header-background {
         background: #fff;
     }
 
