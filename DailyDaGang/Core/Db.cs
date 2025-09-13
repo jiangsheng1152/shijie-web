@@ -25,4 +25,14 @@ public static class Db
         using var db = new LiteDatabase(_connStr);
         action(db);
     }
+
+    /// <summary>
+    /// 获取列表
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static List<T> GetList<T>()
+    {
+        return Execute(x => x.GetCollection<T>().FindAll().ToList());
+    }
 }

@@ -4,7 +4,9 @@ public static class MenuInfo
 {
     public static List<MenuValue> MenuList =
     [
-        new ("1","主页",1,"/")
+        new ("1","主页",1,"/"),
+        new ("2","事件",2,"/story-event"),
+        new ("3","角色",3,"/character")
     ];
 }
 

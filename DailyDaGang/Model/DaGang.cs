@@ -11,8 +11,8 @@ public class DaGang
     
     public string LongContent { get; set; }
     
-    public int[] CharacterIds { get; set; }
+    public int[] StoryEventIds { get; set; }
     
     [BsonIgnore]
-    public Character[] Characters { get; set; }
+    public List<StoryEvent> StoryEvents { get; set; }
 }

@@ -3,7 +3,7 @@
 
 <h2>主页</h2>
 <GridRow>
-    <GridCol Span="3">
+    <GridCol Span="5">
         <Card Style="height: 90vh;overflow:auto;">
             <Title Level="5" Style="margin-left: 30px">选项卡</Title>
             <Tree
@@ -14,7 +14,6 @@
                 TitleExpression="x => x.DataItem.Title"
                 KeyExpression="x => x.DataItem.Id.ToString()"
                 @bind-SelectedData="selectKey"
-                TItem="DaGang"
                 Style="font-size: 15px;">
             </Tree>
         </Card>
@@ -25,7 +24,7 @@
                 <Space>
                     <SpaceItem>
                         <AntDesign.Input TValue="string" Style="font-size: 16px;font-weight: bold" ReadOnly="@isShow" @bind-Value="@selectKey.Title">
-                            <AddOnBefore>标题</AddOnBefore>
+                            <AddOnBefore><div style="font-size: 16px">标题</div></AddOnBefore>
                         </AntDesign.Input>
                     </SpaceItem>
                     <SpaceItem>
@@ -42,35 +41,20 @@
             <TextArea @bind-Value="@selectKey.LongContent" style="font-size: 16px;padding: 0px;height: 80vh" ShowCount readonly="@isShow"></TextArea>
         </Card>
     </GridCol>
-    <GridCol Span="7">
+    <GridCol Span="5">
         <GridRow>
             <GridCol Span="24">
-                <Card Title="人物" Style="padding: 10px">
+                <Card Title="事件" Style="padding: 10px">
                     <Extra>
-                        <Button Color="Color.Blue6">添加人物</Button>
+                        <Button Color="Color.Blue6">添加事件</Button>
                     </Extra>
                     <ChildContent>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物1
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物2
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物3
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物4
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物1
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物2
-                        </CardGrid>
-                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
-                            人物3
-                        </CardGrid>
+                        @foreach (var e in events)
+                        {
+                            <CardGrid Style="width:100%;text-align:center" Hoverable="true">
+                                @e.EventName
+                            </CardGrid>
+                        }
                     </ChildContent>
                 </Card>
             </GridCol>
@@ -83,14 +67,15 @@
     DaGang selectKey { set; get; }=new();
     bool isShow = true;
     List<DaGang> list { set; get; } = [];
-
+    List<StoryEvent> events = [];
+    
     protected override void OnInitialized()
     {
-        GetList();
+        list = Db.GetList<DaGang>();
+        foreach (var item in list)
+            item.StoryEvents = Db.Execute(db => db.GetCollection<StoryEvent>().Find(x => item.StoryEventIds.Contains(x.Id)).ToList());
         selectKey = list.FirstOrDefault()??new();
     }
-
-    private void GetList() => Db.Execute(x =>list= x.GetCollection<DaGang>().FindAll().ToList());
     
     private void SetShow()
     { 
@@ -110,7 +95,7 @@
         if (!string.IsNullOrWhiteSpace(selectKey.LongContent) && !string.IsNullOrWhiteSpace(selectKey.Title))
         {
             Db.Execute(x => x.GetCollection<DaGang>().Upsert(selectKey));
-            GetList();
+            list = Db.GetList<DaGang>();
         }
     }
 }

@@ -1,6 +1,17 @@
-﻿@page "/characterPage"
+﻿@page "/character"
+
 <h3>CharacterPage</h3>
+<Button OnClick="HandleOk">打开</Button>
 
 @code {
-    
+    Character model = new();
+    private void HandleOk()
+    {
+        var modal = ModalInfo.CreateModal<CharacterForm, Character?, Character>(null, "人物",modalService);
+        modal.OnOk = async result =>
+        {
+            
+        };
+    }
+
 }

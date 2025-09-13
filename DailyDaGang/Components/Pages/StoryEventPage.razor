@@ -1,0 +1,141 @@
+﻿@page "/story-event"
+<h3>StoryEventPage</h3>
+<GridRow>
+    <GridCol Span="3">
+        <Card Style="height: 90vh;overflow:auto;">
+            <Title Level="5" Style="margin-left: 30px">选项卡</Title>
+            <Tree
+                SwitcherIcon="null"
+                DefaultExpandAll
+                BlockNode
+                DataSource="list"
+                TitleExpression="x => x.DataItem.EventName"
+                KeyExpression="x => x.DataItem.Id.ToString()"
+                @bind-SelectedData="selectKey"
+                Style="font-size: 15px;">
+            </Tree>
+        </Card>
+    </GridCol>
+    <GridCol Span="14">
+        <Card Style="height: 90vh">
+            <Row>
+                <AntDesign.Input Style="font-size: 16px;font-weight: bold" ReadOnly="@isShow" @bind-Value="@selectKey.EventName">
+                    <AddOnBefore><div style="font-size: 16px">标题</div></AddOnBefore>
+                </AntDesign.Input>
+            </Row>
+            <Row Style="margin: 10px">
+                <Space>
+                    <SpaceItem>
+                        圣罗纪元：
+                        <AntDesign.InputNumber @bind-Value="selectKey.RecordYears">
+                        </AntDesign.InputNumber>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button OnClick="SetShow" Color="Color.Green6">
+                            @{ var btn = isShow ? "编辑" : "保存"; }
+                            @btn
+                        </Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Button Color="Color.Blue6" OnClick="AddStoryEvent">新建</Button>
+                    </SpaceItem>
+                    <SpaceItem>
+                        <Segmented Labels=@options @bind-Value="optionValue"/>
+                    </SpaceItem>
+                </Space>
+            </Row>
+            @if (optionValue == "故事铺垫")
+            {
+                <TextArea @bind-Value="@selectKey.BackDescription" style="font-size: 16px;padding: 0px;height: 70vh" ShowCount readonly="@isShow"></TextArea>
+            }
+            else if (optionValue == "发展高潮")
+            {
+                <TextArea @bind-Value="@selectKey.EventDescription" style="font-size: 16px;padding: 0px;height: 70vh" ShowCount readonly="@isShow"></TextArea>
+            }
+            else if (optionValue == "最终结果")
+            {
+                <TextArea @bind-Value="@selectKey.ResultDescription" style="font-size: 16px;padding: 0px;height: 70vh" ShowCount readonly="@isShow"></TextArea>
+            }
+        </Card>
+    </GridCol>
+    <GridCol Span="7">
+        <GridRow>
+            <GridCol Span="24">
+                <Card Title="人物" Style="padding: 10px">
+                    <Extra>
+                        <Button Color="Color.Blue6">添加人物</Button>
+                    </Extra>
+                    <ChildContent>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物1
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物2
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物3
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物4
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物1
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物2
+                        </CardGrid>
+                        <CardGrid Style="width:25%;text-align:center" Hoverable="true">
+                            人物3
+                        </CardGrid>
+                    </ChildContent>
+                </Card>
+            </GridCol>
+            <GridCol Span="24">
+            </GridCol>
+        </GridRow>
+    </GridCol>
+</GridRow>
+@code {
+    StoryEvent selectKey { set; get; }=new();
+    bool isShow = true;
+    List<StoryEvent> list { set; get; } = [];
+    string[] options = ["故事铺垫", "发展高潮","最终结果"];
+    string optionValue = "故事铺垫";
+    
+    protected override void OnInitialized()
+    {
+        list = Db.GetList<StoryEvent>();
+        selectKey = list.FirstOrDefault()??new();
+    }
+    
+    private void SetShow()
+    { 
+        if(!isShow)
+            SaveStoryEvent();
+        isShow = !isShow;
+    } 
+
+    private void AddStoryEvent()
+    {
+        isShow = !isShow;
+        selectKey = new();
+    }
+
+    private void SaveStoryEvent()
+    {
+        if (!string.IsNullOrWhiteSpace(selectKey.EventName))
+        {
+            Db.Execute(x => x.GetCollection<StoryEvent>().Upsert(selectKey));
+            list = Db.GetList<StoryEvent>();
+        }
+    }
+}
+<style scoped>
+    .ant-tree-switcher{
+        width: 0px;
+        line-height: 0px;
+    }
+    .ant-tree .ant-tree-node-content-wrapper{
+        line-height: 36px;
+    }
+</style>

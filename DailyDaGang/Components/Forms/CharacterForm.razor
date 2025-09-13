@@ -1,7 +1,27 @@
-﻿<h3>CharacterForm</h3>
-<Form>
-    
+﻿@inherits FeedbackComponent<Character?,Character>
+<Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef" ValidateMode="@FormValidateMode.Complex">
+    <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
 </Form>
 @code {
+    private Form<Character> formRef;
+    Character model = new();
+    
+    protected override void OnInitialized()
+    {
+        model = Options ?? new();
+        base.OnInitialized();
+    }
+    
+    public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (!formRef.Validate())
+            args.Cancel = true;
+        else
+        {
+            formRef.Submit();
+            OkCancelRefWithResult!.OnOk(model);
+        }
+        return base.OnFeedbackOkAsync(args);
+    }
     
 }
