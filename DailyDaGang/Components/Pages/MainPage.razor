@@ -72,8 +72,6 @@
     protected override void OnInitialized()
     {
         list = Db.GetList<DaGang>();
-        foreach (var item in list)
-            item.StoryEvents = Db.Execute(db => db.GetCollection<StoryEvent>().Find(x => item.StoryEventIds.Contains(x.Id)).ToList());
         selectKey = list.FirstOrDefault()??new();
     }
     

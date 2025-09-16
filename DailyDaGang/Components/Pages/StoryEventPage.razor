@@ -31,6 +31,18 @@
                         </AntDesign.InputNumber>
                     </SpaceItem>
                     <SpaceItem>
+                        <Select DataSource="@daGangs"
+                                @bind-Value="@selectDagang"
+                                ValueName="@nameof(DaGang.Id)"
+                                LabelName="@nameof(DaGang.Title)"
+                                Style="width:200px">
+                        </Select>
+                    </SpaceItem>
+                </Space>
+            </Row>
+            <Row>
+                <Space>
+                    <SpaceItem>
                         <Button OnClick="SetShow" Color="Color.Green6">
                             @{ var btn = isShow ? "编辑" : "保存"; }
                             @btn
@@ -101,11 +113,15 @@
     List<StoryEvent> list { set; get; } = [];
     string[] options = ["故事铺垫", "发展高潮","最终结果"];
     string optionValue = "故事铺垫";
+    List<DaGang> daGangs = [];
+    int selectDagang;
     
     protected override void OnInitialized()
     {
         list = Db.GetList<StoryEvent>();
-        selectKey = list.FirstOrDefault()??new();
+        daGangs = Db.GetList<DaGang>();
+        selectDagang = daGangs.Select(x => x.Id).FirstOrDefault();
+        selectDagang = selectKey.DaGangId.Value;
     }
     
     private void SetShow()
@@ -125,10 +141,12 @@
     {
         if (!string.IsNullOrWhiteSpace(selectKey.EventName))
         {
+            selectKey.DaGangId = selectDagang;
             Db.Execute(x => x.GetCollection<StoryEvent>().Upsert(selectKey));
             list = Db.GetList<StoryEvent>();
         }
     }
+    
 }
 <style scoped>
     .ant-tree-switcher{
