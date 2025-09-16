@@ -10,9 +10,4 @@ public class DaGang
     public string Title { get; set; }
     
     public string LongContent { get; set; }
-    
-    public int[] StoryEventIds { get; set; }
-    
-    [BsonIgnore]
-    public List<StoryEvent> StoryEvents { get; set; }
 }

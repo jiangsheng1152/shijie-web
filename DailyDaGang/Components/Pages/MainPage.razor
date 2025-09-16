@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using DailyDaGang.Model
 
-<h2>主页</h2>
 <GridRow>
     <GridCol Span="5">
         <Card Style="height: 90vh;overflow:auto;">
@@ -72,8 +71,6 @@
     protected override void OnInitialized()
     {
         list = Db.GetList<DaGang>();
-        foreach (var item in list)
-            item.StoryEvents = Db.Execute(db => db.GetCollection<StoryEvent>().Find(x => item.StoryEventIds.Contains(x.Id)).ToList());
         selectKey = list.FirstOrDefault()??new();
     }
     

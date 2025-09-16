@@ -27,9 +27,40 @@
                 <Space>
                     <SpaceItem>
                         圣罗纪元：
-                        <AntDesign.InputNumber @bind-Value="selectKey.RecordYears">
-                        </AntDesign.InputNumber>
+                        @if (isShow)
+                        {
+                            string year = string.Empty;
+                            if (selectKey.RecordYears >= 0)
+                                year = "纪元"+selectKey.RecordYears.ToString() + "年";
+                            else
+                            {
+                                var recordYear = -selectKey.RecordYears;
+                                year = "纪元前" + recordYear.ToString() + "年";
+                            }
+                            @year
+                        }
+                        else
+                        {
+                            <AntDesign.InputNumber @bind-Value="selectKey.RecordYears">
+                            </AntDesign.InputNumber>
+                        }
                     </SpaceItem>
+                    <SpaceItem>
+                        <Select 
+                            TItem="DaGang"
+                            TItemValue="int"
+                            DataSource="daGangs"
+                            @bind-Value="selectKey.DaGangId"
+                            ValueName="@nameof(DaGang.Id)"
+                            LabelName="@nameof(DaGang.Title)"
+                            OnSelectedItemChanged="@(item=>SelectIItemChange(item))"
+                            Style="width:200px">
+                        </Select>
+                    </SpaceItem>
+                </Space>
+            </Row>
+            <Row Style="margin-bottom: 10px">
+                <Space>
                     <SpaceItem>
                         <Button OnClick="SetShow" Color="Color.Green6">
                             @{ var btn = isShow ? "编辑" : "保存"; }
@@ -101,11 +132,13 @@
     List<StoryEvent> list { set; get; } = [];
     string[] options = ["故事铺垫", "发展高潮","最终结果"];
     string optionValue = "故事铺垫";
+    List<DaGang> daGangs = [];
     
     protected override void OnInitialized()
     {
         list = Db.GetList<StoryEvent>();
-        selectKey = list.FirstOrDefault()??new();
+        daGangs = Db.GetList<DaGang>();
+        selectKey = list?.FirstOrDefault()??new();
     }
     
     private void SetShow()
@@ -129,6 +162,18 @@
             list = Db.GetList<StoryEvent>();
         }
     }
+
+    /// <summary>
+    /// 更换大纲
+    /// </summary>
+    /// <param name="item"></param>
+    private void SelectIItemChange(DaGang item)
+    {
+        selectKey.DaGangId = item.Id;
+        Db.Execute(db => db.GetCollection<StoryEvent>().Update(selectKey));
+    }
+    
+    
 }
 <style scoped>
     .ant-tree-switcher{

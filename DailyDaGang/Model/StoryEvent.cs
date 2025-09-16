@@ -24,4 +24,9 @@ public class StoryEvent
 
     [DisplayName("圣罗纪元")]
     public int RecordYears { set; get; } = 4000;
+    
+    public int DaGangId { set; get; }
+    
+    [BsonIgnore]
+    public DaGang? DaGang { set; get; }
 }
