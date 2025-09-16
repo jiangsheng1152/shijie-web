@@ -1,4 +1,4 @@
-﻿@inherits FeedbackComponent<Character?,Character>
+@inherits FeedbackComponent<Character?,Character>
 <Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef" ValidateMode="@FormValidateMode.Complex">
     <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
 </Form>
