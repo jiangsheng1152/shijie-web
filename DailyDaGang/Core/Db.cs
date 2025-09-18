@@ -25,7 +25,7 @@ public static class Db
         using var db = new LiteDatabase(_connStr);
         action(db);
     }
-
+    
     /// <summary>
     /// 获取列表
     /// </summary>

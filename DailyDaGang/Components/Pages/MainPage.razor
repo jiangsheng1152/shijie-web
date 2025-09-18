@@ -2,7 +2,7 @@
 @using DailyDaGang.Model
 
 <GridRow>
-    <GridCol Span="5">
+    <GridCol Span="4">
         <Card Style="height: 90vh;overflow:auto;">
             <Title Level="5" Style="margin-left: 30px">选项卡</Title>
             <Tree
@@ -40,19 +40,28 @@
             <TextArea @bind-Value="@selectKey.LongContent" style="font-size: 16px;padding: 0px;height: 80vh" ShowCount readonly="@isShow"></TextArea>
         </Card>
     </GridCol>
-    <GridCol Span="5">
+    <GridCol Span="6">
         <GridRow>
             <GridCol Span="24">
-                <Card Title="事件" Style="padding: 10px">
+                <Card Title="文献" Style="padding: 10px">
                     <Extra>
-                        <Button Color="Color.Blue6">添加事件</Button>
+                        <Button Color="Color.Blue6" OnClick="AddKnowLedge">添加文献</Button>
                     </Extra>
                     <ChildContent>
-                        @foreach (var e in events)
+                        @foreach (var item in knowledges)
                         {
-                            <CardGrid Style="width:100%;text-align:center" Hoverable="true">
-                                @e.EventName
-                            </CardGrid>
+                            <Popover Placement="Placement.LeftBottom" Title="@item.Title" Trigger="new[] { AntDesign.Trigger.Click }">
+                                <ContentTemplate>
+                                    <div class="pre-line">
+                                        <span>@item.Content</span>
+                                    </div>
+                                </ContentTemplate>
+                                <ChildContent>
+                                    <Button style="margin: 5px">
+                                        @item.Title
+                                    </Button>
+                                </ChildContent>
+                            </Popover>   
                         }
                     </ChildContent>
                 </Card>
@@ -66,12 +75,13 @@
     DaGang selectKey { set; get; }=new();
     bool isShow = true;
     List<DaGang> list { set; get; } = [];
-    List<StoryEvent> events = [];
+    List<Knowledge> knowledges = [];
     
     protected override void OnInitialized()
     {
         list = Db.GetList<DaGang>();
         selectKey = list.FirstOrDefault()??new();
+        knowledges = Db.GetList<Knowledge>();
     }
     
     private void SetShow()
@@ -94,6 +104,15 @@
             Db.Execute(x => x.GetCollection<DaGang>().Upsert(selectKey));
             list = Db.GetList<DaGang>();
         }
+    }
+
+    /// <summary>
+    /// 添加文献
+    /// </summary>
+    private void AddKnowLedge()
+    {
+        var modal = ModalInfo.CreateModal<KnowledgeForm, Knowledge?>(null, "文献",modalService);
+        modal.OnOk = async() => knowledges = Db.GetList<Knowledge>();
     }
 }
 <style scoped>
