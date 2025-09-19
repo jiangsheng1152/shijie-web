@@ -1,0 +1,61 @@
+﻿@page "/LabelTagPage"
+<Table TItem="LabelTag" DataSource="@data" Total="total" PageSize="10" @ref="table">
+    <TitleTemplate>
+        <Flex Justify="FlexJustify.End" Gap="@("10")">
+            <Button Type="ButtonType.Primary" OnClick="() => StartEdit(null)">新建</Button>
+        </Flex>
+    </TitleTemplate>
+    <ColumnDefinitions>
+        <PropertyColumn Property="c => c.Name">
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Color">
+            <Tag Color="context.Color">@context.Color.ToString()</Tag>
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Description">
+        </PropertyColumn>
+        <ActionColumn Title="操作" Width="200">
+            <Space Size="SpaceSize.Middle">
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" OnClick="() => StartEdit(context)" Color="Color.Green6">编辑</Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Danger OnClick="()=>Delete(context)" Type="ButtonType.Primary">删除</Button>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </ColumnDefinitions>
+</Table>
+
+@code {
+    private List<LabelTag> data = [];
+    int total;
+    ITable table;
+
+    protected override void OnInitialized()
+    {
+        data = Db.GetList<LabelTag>();
+        total = data.Count;
+    }
+
+    private void StartEdit(LabelTag? labelTag)
+    {
+        var modal=ModalInfo.CreateModal<LabelTagForm, LabelTag>(labelTag, "标签", modalService);
+        modal.OnOk = async () =>
+        {
+            data = Db.GetList<LabelTag>();
+            total = data.Count;
+            table.ReloadData();
+            StateHasChanged();
+        };
+    }
+
+    private async void Delete(LabelTag row)
+    {
+        var result=await comfirmService.Show($"确定删除[{row.Name}]?", "确认", ConfirmButtons.YesNo, ConfirmIcon.Warning);
+        if (result==ConfirmResult.No)
+            return;
+        Db.Execute(db => db.GetCollection<LabelTag>().Delete(row.Id));
+        table.ReloadData();
+        StateHasChanged();
+    }
+}

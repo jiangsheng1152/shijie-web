@@ -35,4 +35,24 @@ public static class Db
     {
         return Execute(x => x.GetCollection<T>().FindAll().ToList());
     }
+
+    /// <summary>
+    /// 插入或修改
+    /// </summary>
+    /// <param name="t"></param>
+    /// <typeparam name="T"></typeparam>
+    public static void UpdateOrInsert<T>(T t)
+    {
+        Execute(x => x.GetCollection<T>().Upsert(t));
+    }
+
+    /// <summary>
+    /// 删除
+    /// </summary>
+    /// <param name="id"></param>
+    /// <typeparam name="T"></typeparam>
+    public static void Delete<T>(BsonValue id)
+    {
+        Execute(x => x.GetCollection<T>().Delete(id));
+    }
 }

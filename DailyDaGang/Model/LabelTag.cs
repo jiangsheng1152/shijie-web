@@ -18,4 +18,7 @@ public class LabelTag
     
     [DisplayName("颜色")]
     public TagColor Color { get; set; }
+    
+    [DisplayName("描述")]
+    public string? Description { get; set; }
 }

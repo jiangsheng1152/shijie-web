@@ -1,0 +1,28 @@
+﻿@inherits FeedbackComponent<LabelTag?>
+<Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef">
+    <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
+    <Tag Color="model.Color">颜色测试</Tag>
+</Form>
+@code {
+    private Form<LabelTag> formRef;
+    LabelTag model = new();
+    
+    protected override void OnInitialized()
+    {
+        model = Options ?? new();
+        base.OnInitialized();
+    }
+    
+    public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (!formRef.Validate())
+            args.Cancel = true;
+        else
+        {
+            formRef.Submit();
+            //存入到数据库里面
+            Db.Execute(x => x.GetCollection<LabelTag>().Upsert(model));
+        }
+        return base.OnFeedbackOkAsync(args);
+    }
+}

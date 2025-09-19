@@ -1,5 +1,4 @@
 ﻿@page "/story-event"
-<h3>StoryEventPage</h3>
 <GridRow>
     <GridCol Span="3">
         <Card Style="height: 90vh;overflow:auto;">
@@ -25,7 +24,7 @@
             </Row>
             <Row Style="margin: 10px">
                 <Space>
-                    <SpaceItem>
+                    <SpaceItem Style="width: 200px">
                         圣罗纪元：
                         @if (isShow)
                         {
@@ -46,14 +45,15 @@
                         }
                     </SpaceItem>
                     <SpaceItem>
-                        <Select 
-                            TItem="DaGang"
+                        大纲：
+                        <Select
+                            TItem="DaGang?"
                             TItemValue="int"
                             DataSource="daGangs"
                             @bind-Value="selectKey.DaGangId"
                             ValueName="@nameof(DaGang.Id)"
                             LabelName="@nameof(DaGang.Title)"
-                            OnSelectedItemChanged="@(item=>SelectIItemChange(item))"
+                            OnSelectedItemChanged="@(item => SelectIItemChange(item))"
                             Style="width:200px">
                         </Select>
                     </SpaceItem>
@@ -167,9 +167,9 @@
     /// 更换大纲
     /// </summary>
     /// <param name="item"></param>
-    private void SelectIItemChange(DaGang item)
+    private void SelectIItemChange(DaGang? item)
     {
-        selectKey.DaGangId = item.Id;
+        selectKey.DaGangId = item?.Id ?? 0;
         Db.Execute(db => db.GetCollection<StoryEvent>().Update(selectKey));
     }
     

@@ -45,7 +45,7 @@
             <GridCol Span="24">
                 <Card Title="文献" Style="padding: 10px">
                     <Extra>
-                        <Button Color="Color.Blue6" OnClick="AddKnowLedge">添加文献</Button>
+                        <Button Color="Color.Blue6" OnClick="()=>AddKnowLedge(null)">添加文献</Button>
                     </Extra>
                     <ChildContent>
                         @foreach (var item in knowledges)
@@ -54,6 +54,7 @@
                                 <ContentTemplate>
                                     <div class="pre-line">
                                         <span>@item.Content</span>
+                                        <Button Type="ButtonType.Link" OnClick="()=>AddKnowLedge(item)">编辑</Button>
                                     </div>
                                 </ContentTemplate>
                                 <ChildContent>
@@ -109,10 +110,14 @@
     /// <summary>
     /// 添加文献
     /// </summary>
-    private void AddKnowLedge()
+    private void AddKnowLedge(Knowledge? knowledge)
     {
-        var modal = ModalInfo.CreateModal<KnowledgeForm, Knowledge?>(null, "文献",modalService);
-        modal.OnOk = async() => knowledges = Db.GetList<Knowledge>();
+        var modal = ModalInfo.CreateModal<KnowledgeForm, Knowledge?>(knowledge, "文献",modalService);
+        modal.OnOk = async () =>
+        {
+            knowledges = Db.GetList<Knowledge>();
+            StateHasChanged();
+        };
     }
 }
 <style scoped>
