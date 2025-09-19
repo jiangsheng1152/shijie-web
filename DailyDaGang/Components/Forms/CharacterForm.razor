@@ -1,15 +1,46 @@
-@inherits FeedbackComponent<Character?,Character>
+@inherits FeedbackComponent<Character?>
 <Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef" ValidateMode="@FormValidateMode.Complex">
     <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
+    <FormItem Label="选择标签">
+        <Popover Placement="Placement.Right" Title="标签" Trigger="@(new[] { AntDesign.Trigger.Click })">
+            <ContentTemplate>
+                <TagPanel @bind-Items="model.LabelTags" LabelTagStatus="LabelStatus.人物标签"></TagPanel>
+            </ContentTemplate>
+            <ChildContent>
+                <Button>选择标签</Button>
+            </ChildContent>
+        </Popover>
+        <div>
+            @if (model.LabelTags is { Length: > 0 })
+            {
+                foreach (var t in model.LabelTags)
+                {
+                    <Tag Color="t.Color">@t.Name</Tag>
+                } 
+            }
+        </div>
+    </FormItem>
+
+    <FormItem Label="添加体系">
+        <Switch OnChange="OnSwitch" @bind-Checked="switchValue"></Switch>
+    </FormItem>
 </Form>
 @code {
     private Form<Character> formRef;
     Character model = new();
+    bool switchValue { set; get; }
     
     protected override void OnInitialized()
     {
         model = Options ?? new();
-        base.OnInitialized();
+        switchValue = model.CombatPower!=null;
+    }
+    
+    private void OnSwitch(bool b)
+    {
+        if (b)
+            model.CombatPower = new();
+        else model.CombatPower = null;
     }
     
     public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
@@ -19,7 +50,7 @@
         else
         {
             formRef.Submit();
-            OkCancelRefWithResult!.OnOk(model);
+            Db.UpdateOrInsert(model);
         }
         return base.OnFeedbackOkAsync(args);
     }

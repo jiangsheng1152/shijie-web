@@ -7,8 +7,8 @@
     Character model = new();
     private void HandleOk()
     {
-        var modal = ModalInfo.CreateModal<CharacterForm, Character?, Character>(null, "人物",modalService);
-        modal.OnOk = async result =>
+        var modal = ModalInfo.CreateModal<CharacterForm, Character?>(null, "人物",modalService);
+        modal.OnOk = async() =>
         {
             
         };

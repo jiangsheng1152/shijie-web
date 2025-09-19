@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using DailyDaGang.Core;
 using DailyDaGang.Enums;
 using LiteDB;
 
@@ -32,7 +33,13 @@ public class Character
     public LabelTag[] LabelTags { get; set; }
 
     [DisplayName("战力设计")]
-    public CombatPower CombatPower { get; set; } = new();
+    public CombatPower? CombatPower { get; set; }
+
+    public Character()
+    {
+        if (LabelTagIds is { Length: > 0 })
+            LabelTags = Db.Execute(db => db.GetCollection<LabelTag>().Find(x => LabelTagIds.Contains(x.Id))).ToArray();
+    }
 }
 
 public class CombatPower

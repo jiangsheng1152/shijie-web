@@ -1,0 +1,27 @@
+﻿<div>
+    <CheckboxGroup Options="@options" @bind-Value="@selectValue" TValue="LabelTag" OnChange="Change"/>
+    <Button OnClick="Change">提交</Button>
+</div>
+
+@code {
+    [Parameter] public LabelTag[]? LabelTags { set; get; }
+    [Parameter]public LabelStatus LabelTagStatus { set; get; }
+    [Parameter]
+    public EventCallback<LabelTag[]> ValueChanged { get; set; }
+    
+    CheckboxOption<LabelTag>[] options = [];
+    LabelTag[] selectValue = [];
+    
+    protected override void OnInitialized()
+    {
+        var list=Db.Execute(db => db.GetCollection<LabelTag>().Find(x => x.Status == LabelTagStatus)).ToList();
+        options = list.Select(x => new CheckboxOption<LabelTag>() { Label = x.Name, Value = x }).ToArray();
+        selectValue = LabelTags ?? [];
+    }
+
+    private void Change()
+    {
+        LabelTags = selectValue;
+        ValueChanged.InvokeAsync(LabelTags);
+    }
+}
