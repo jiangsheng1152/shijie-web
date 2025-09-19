@@ -1,13 +1,13 @@
 ﻿<div>
-    <CheckboxGroup Options="@options" @bind-Value="@selectValue" TValue="LabelTag" OnChange="Change"/>
-    <Button OnClick="Change">提交</Button>
+    <CheckboxGroup Options="@options" @bind-Value="@selectValue" TValue="LabelTag"/>
+    <Button OnClick="Sumbit"></Button>
 </div>
 
 @code {
-    [Parameter] public LabelTag[]? LabelTags { set; get; }
+    [Parameter] public LabelTag[] LabelTags { set; get; }
     [Parameter]public LabelStatus LabelTagStatus { set; get; }
     [Parameter]
-    public EventCallback<LabelTag[]> ValueChanged { get; set; }
+    public EventCallback<LabelTag[]> LabelTagsChanged  { get; set; }
     
     CheckboxOption<LabelTag>[] options = [];
     LabelTag[] selectValue = [];
@@ -19,9 +19,9 @@
         selectValue = LabelTags ?? [];
     }
 
-    private void Change()
+    private async void Sumbit()
     {
         LabelTags = selectValue;
-        ValueChanged.InvokeAsync(LabelTags);
+        await LabelTagsChanged .InvokeAsync(LabelTags);
     }
 }

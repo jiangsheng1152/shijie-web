@@ -4,7 +4,7 @@
     <FormItem Label="选择标签">
         <Popover Placement="Placement.Right" Title="标签" Trigger="@(new[] { AntDesign.Trigger.Click })">
             <ContentTemplate>
-                <TagPanel @bind-Items="model.LabelTags" LabelTagStatus="LabelStatus.人物标签"></TagPanel>
+                <TagPanel @bind-LabelTags="model.LabelTags" LabelTagStatus="LabelStatus.人物标签"></TagPanel>
             </ContentTemplate>
             <ChildContent>
                 <Button>选择标签</Button>
