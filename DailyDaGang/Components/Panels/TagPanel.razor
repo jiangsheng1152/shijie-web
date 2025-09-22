@@ -1,6 +1,6 @@
 ﻿<div>
     <CheckboxGroup Options="@options" @bind-Value="@selectValue" TValue="LabelTag"/>
-    <Button OnClick="Sumbit"></Button>
+    <Button OnClick="Sumbit">确认</Button>
 </div>
 
 @code {
@@ -19,9 +19,9 @@
         selectValue = LabelTags ?? [];
     }
 
-    private async void Sumbit()
+    private async Task Sumbit()
     {
-        LabelTags = selectValue;
-        await LabelTagsChanged .InvokeAsync(LabelTags);
+        //LabelTags = selectValue;
+        await LabelTagsChanged .InvokeAsync(selectValue);
     }
 }

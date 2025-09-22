@@ -6,7 +6,7 @@ public static class MenuInfo
     [
         new("1", "主页", 1, "/"),
         new("2", "事件", 2, "/story-event"),
-        new("3", "角色", 3, "/character"),
+        new("3", "角色", 3, "/Character"),
         new("4", "标签", 4, "/LabelTagPage")
     ];
 }

@@ -1,6 +1,18 @@
 @inherits FeedbackComponent<Character?>
-<Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef" ValidateMode="@FormValidateMode.Complex">
-    <GenerateFormItem NotGenerate="@(x=> x == "Id")" />
+
+<Form Model="@model" LabelColSpan="4" WrapperColSpan="20" @ref="formRef">
+    <FormItem>
+        <Input @bind-Value="@context.Name"/>
+    </FormItem>
+    <FormItem>
+        <AntDesign.InputNumber @bind-Value="@context.Age"/>
+    </FormItem>
+    <FormItem>
+        <Input @bind-Value="@context.Gender"/>
+    </FormItem>
+    <FormItem>
+        <Input @bind-Value="@context.Personality"/>
+    </FormItem>
     <FormItem Label="选择标签">
         <Popover Placement="Placement.Right" Title="标签" Trigger="@(new[] { AntDesign.Trigger.Click })">
             <ContentTemplate>
@@ -10,39 +22,55 @@
                 <Button>选择标签</Button>
             </ChildContent>
         </Popover>
-        <div>
+        <div style="margin-top: 5px">
             @if (model.LabelTags is { Length: > 0 })
             {
                 foreach (var t in model.LabelTags)
                 {
                     <Tag Color="t.Color">@t.Name</Tag>
-                } 
+                }
             }
         </div>
     </FormItem>
-
     <FormItem Label="添加体系">
         <Switch OnChange="OnSwitch" @bind-Checked="switchValue"></Switch>
     </FormItem>
+    @if (switchValue)
+    {
+        <Divider>体系</Divider>
+        <FormItem>
+            <EnumSelect TEnum="RootSourceStatus" @bind-Value="@context.CombatPower.SourceStatus"/>
+        </FormItem>
+        <FormItem>
+            <AntDesign.InputNumber @bind-Value="@context.CombatPower.MentalData"/>
+        </FormItem>
+        <FormItem>
+            <AntDesign.InputNumber @bind-Value="@context.CombatPower.ForceData"/>
+        </FormItem>
+        <FormItem>
+            <AntDesign.InputNumber @bind-Value="@context.CombatPower.MagicData"/>
+        </FormItem>
+    }
 </Form>
+
 @code {
     private Form<Character> formRef;
     Character model = new();
     bool switchValue { set; get; }
-    
+
     protected override void OnInitialized()
     {
         model = Options ?? new();
-        switchValue = model.CombatPower!=null;
+        switchValue = model.CombatPower != null;
     }
-    
+
     private void OnSwitch(bool b)
     {
         if (b)
             model.CombatPower = new();
         else model.CombatPower = null;
     }
-    
+
     public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
     {
         if (!formRef.Validate())
@@ -50,8 +78,12 @@
         else
         {
             formRef.Submit();
+            if (model.LabelTags is { Length: > 0 })
+                model.LabelTagIds = model.LabelTags.Select(x => x.Id).ToArray();
             Db.UpdateOrInsert(model);
         }
+
         return base.OnFeedbackOkAsync(args);
     }
+
 }
