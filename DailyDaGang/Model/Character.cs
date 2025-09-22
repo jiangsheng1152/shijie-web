@@ -37,9 +37,7 @@ public class Character
 
     public Character()
     {
-        if (LabelTagIds is { Length: > 0 })
-            LabelTags = Db.Execute(db => db.GetCollection<LabelTag>().Find(x => LabelTagIds.Contains(x.Id))).ToArray();
-        else LabelTags = [];
+        LabelTags = LabelTagIds is { Length: > 0 } ? Db.Execute(db => db.GetCollection<LabelTag>().Find(x => LabelTagIds.Contains(x.Id))).ToArray() : [];
     }
 }
 

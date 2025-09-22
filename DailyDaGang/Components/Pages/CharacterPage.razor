@@ -1,17 +1,67 @@
-﻿@page "/character"
-
-<h3>CharacterPage</h3>
-<Button OnClick="HandleOk">打开</Button>
+﻿@page "/Character"
+<Table TItem="Character" DataSource="@data" Total="total" PageSize="10" @ref="table">
+    <TitleTemplate>
+        <Flex Justify="FlexJustify.End" Gap="@("10")">
+            <Button Type="ButtonType.Primary" OnClick="() => StartEdit(null)">新建</Button>
+        </Flex>
+    </TitleTemplate>
+    <ColumnDefinitions>
+        <PropertyColumn Property="c => c.Name"/>
+        <PropertyColumn Property="c => c.Age"/>
+        <PropertyColumn Property="c => c.Gender"/>
+        <PropertyColumn Property="c => c.LabelTags">
+            @if (context.LabelTags is { Length: > 0 })
+            {
+                foreach (var t in context.LabelTags)
+                {
+                    <Tag Color="t.Color">@t.Name</Tag>
+                }
+            }
+        </PropertyColumn>
+        <PropertyColumn Property="c => c.Personality"/>
+        <ActionColumn Title="操作" Width="200">
+            <Space Size="SpaceSize.Middle">
+                <SpaceItem>
+                    <Button Type="ButtonType.Primary" OnClick="() => StartEdit(context)" Color="Color.Green6">编辑</Button>
+                </SpaceItem>
+                <SpaceItem>
+                    <Button Danger OnClick="()=>Delete(context)" Type="ButtonType.Primary">删除</Button>
+                </SpaceItem>
+            </Space>
+        </ActionColumn>
+    </ColumnDefinitions>
+</Table>
 
 @code {
-    Character model = new();
-    private void HandleOk()
+    private List<Character> data = [];
+    int total;
+    ITable table;
+
+    protected override void OnInitialized()
     {
-        var modal = ModalInfo.CreateModal<CharacterForm, Character?>(null, "人物",modalService);
-        modal.OnOk = async() =>
+        data = Db.GetList<Character>();
+        total = data.Count;
+    }
+
+    private void StartEdit(Character? c)
+    {
+        var modal=ModalInfo.CreateModal<CharacterForm, Character>(c, "标签", modalService);
+        modal.OnOk = async () =>
         {
-            
+            data = Db.GetList<Character>();
+            total = data.Count;
+            table.ReloadData();
+            StateHasChanged();
         };
     }
 
+    private async void Delete(Character row)
+    {
+        var result=await comfirmService.Show($"确定删除[{row.Name}]?", "确认", ConfirmButtons.YesNo, ConfirmIcon.Warning);
+        if (result==ConfirmResult.No)
+            return;
+        Db.Execute(db => db.GetCollection<Character>().Delete(row.Id));
+        table.ReloadData();
+        StateHasChanged();
+    }
 }
